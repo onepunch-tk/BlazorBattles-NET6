@@ -1,0 +1,21 @@
+@page "/battlelog"
+@inject IBattleService _battleService
+<h3>BattleLog</h3>
+
+<ul class="list-group">
+    @foreach (var round in _battleService.LastBattle.Log)
+    {
+        <li class="@GetClass(round)">@round</li>
+    }
+</ul>
+
+@code {
+
+    string GetClass(string round)
+    {
+        if (round.Contains("kills"))
+            return "list-group-item list-group-item-danger";
+        else
+            return "list-group-item";
+    }
+}

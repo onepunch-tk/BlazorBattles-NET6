@@ -1,0 +1,5 @@
+.required[b-192expy616]::after {
+    content: " *";
+    font-weight: bold;
+    color: red;
+}

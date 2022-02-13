@@ -1,0 +1,45 @@
+@page "/history"
+@inject IBattleService _battleService
+
+<h3>History</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <td>Date</td>
+        <td>Attacker</td>
+        <td>Opponent</td>
+        <td>Rounds</td>
+        <td>Damage</td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var battle in _battleService.Histories)
+    {
+        <tr style="@GetHistoryStyle(battle)">
+            <td>@battle.BattleDate</td>
+            <td>@battle.AttackerName</td>
+            <td>@battle.OpponentName</td>
+            <td>@battle.RoundFought</td>
+            <td>@battle.WinnerDamageDealt</td>
+            <td>@(battle.YouWon ? "You won!" : "You lost!")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await _battleService.GetHistory();
+    }
+
+    string GetHistoryStyle(BattleHistoryEntry entry)
+    {
+        if (entry.YouWon)
+            return "color: green; font-weight: 600;";
+        else
+            return string.Empty;
+    }
+}

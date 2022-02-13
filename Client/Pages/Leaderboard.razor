@@ -1,0 +1,89 @@
+@page "/leaderboard"
+@using System.Security.Claims
+@inject ILeaderboardService _leaderboardService
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject IBattleService _battleService
+@inject IBananaService _bananaService
+@inject IToastService _toast
+@inject NavigationManager _navigation
+
+<h3>Leaderboard</h3>
+
+@if (_leaderboardService.Leaderboard == null)
+{
+    <span>Loading Leaderboard...</span>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Victories</th>
+            <th>Defeats</th>
+            <th>Battles</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var entry in _leaderboardService.Leaderboard)
+        {
+            <tr style="@GetMyStyle(@entry.UserId)">
+                <td>@entry.Rank</td>
+                <td>@entry.UserName</td>
+                <td>@entry.Victories</td>
+                <td>@entry.Defeats</td>
+                <td>@entry.Battles</td>
+                <td>
+                    @if (myUserId != @entry.UserId)
+                    {
+                        <button class="btn btn-primary" @onclick="(() => StartBatlles(entry.UserId))">
+                            Fight
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    int myUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _leaderboardService.GetLeaderboard();
+
+        var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        myUserId = int.Parse(authState.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+    }
+
+    public string GetMyStyle(int userId)
+    {
+        if (myUserId.Equals(userId))
+            return "color: green; font-weight: 600;";
+        else
+            return string.Empty;
+    }
+
+    private async Task StartBatlles(int opponentId)
+    {
+        var result = await _battleService.StartBattle(opponentId);
+        
+        if(result.RoundsFought <= 0)
+            _toast.ShowInfo("The battle did not take place.");
+        else if(result.IsVictory)
+            _toast.ShowSuccess("You won the battle!");
+        else
+            _toast.ShowWarning("You have been destroyed!");
+
+        await _leaderboardService.GetLeaderboard();
+        await _bananaService.GetBananas();
+        
+        if(result.RoundsFought > 0)
+            _navigation.NavigateTo("battlelog");
+    }
+
+}

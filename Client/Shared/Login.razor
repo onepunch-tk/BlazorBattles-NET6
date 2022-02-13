@@ -1,0 +1,45 @@
+﻿@inject ILocalStorageService _localStorage
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject IAuthService _authService
+@inject IToastService _toastService
+
+
+Please log in below or <NavLink href="register">register</NavLink> for a new account
+
+<EditForm Model="_user" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator/>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="_user.Email" class="form-control"></InputText>
+        <ValidationMessage For="() => _user.Email"/>
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <InputText id="password" @bind-Value="_user.Password" class="form-control" type="password"></InputText>
+        <ValidationMessage For="() => _user.Password"/>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+</EditForm>
+
+        
+@code {
+    private UserLogin _user = new();
+
+    private async void HandleLogin()
+    {
+        var result = await _authService.Login(_user);
+
+        if (result is {Success: true })
+        {
+            await _localStorage.SetItemAsync<string>("authToken", result.Data);
+            await _authenticationStateProvider.GetAuthenticationStateAsync();
+        }
+        else
+        {
+            _toastService.ShowError(result?.Message);
+        }
+    }
+
+}

@@ -1,0 +1,49 @@
+﻿@page "/army"
+@inject IUnitService _unitService
+@inject IJSRuntime js
+@attribute [Authorize]
+
+<h3>My Army</h3>
+
+@if (_unitService.Units?.Count > 0)
+{
+    <table class="table">
+        @foreach (var userUnit in _unitService.MyUnits)
+        {
+            <tr>
+                <td>
+                    @switch (userUnit.UnitId)
+                    {
+                        case 1:<img src="icons/knight.png" alt=""/>break;
+                        case 2:<img src="icons/archer.png" alt=""/>break;
+                        case 3:<img src="icons/mage.png" alt=""/>break;
+                    }
+                </td>
+                <td>
+                    @_unitService.Units.First(unit => unit.Id.Equals(userUnit.UnitId)).Title
+                </td>
+                <td>
+                    @userUnit.HitPoints Hp
+                </td>
+            </tr>
+        }
+    </table>
+    <center>
+        <button class="btn btn-warning" @onclick="ReviveArmy">Revive Your Army for 1000 Bananas</button>
+    </center>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await _unitService.LoadUnitsAsync();
+        await _unitService.LoadUserUnitAsync();
+    }
+
+    private async Task ReviveArmy()
+    {
+        await _unitService.ReviveArmy();
+        await js.ConsolLog("testdot!!!");
+    }
+
+}
