@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace BlazorBattles.Server.Controllers
 {
@@ -24,6 +25,23 @@ namespace BlazorBattles.Server.Controllers
         {
             _context = context;
             _utilityService = utilityService;
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetUnitPaging()
+        {
+            var user = await _utilityService.GetUser();
+            // var userUnits = _context.UserUnits
+            //     .Where(u => u.UserId.Equals(user.Id))
+            //     .Skip((startId - 1) * viewCount)
+            //     .Take(viewCount);
+
+            var totalCount = await _context.UserUnits
+                .Where(u => u.UserId.Equals(user.Id))
+                .CountAsync();
+                
+
+            return Ok(totalCount);
         }
 
         [HttpPost("revive")]
@@ -86,19 +104,24 @@ namespace BlazorBattles.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUserUnit()
+        public async Task<IActionResult> GetUserUnit([FromQuery(Name = "page")] int pageNumber, [FromQuery(Name = "view")] int viewCount)
         {
             var user = await _utilityService.GetUser();
-            var userUnits = await _context.UserUnits.Where(unit => unit.UserId.Equals(user.Id))
-                .ToListAsync();
+            // var userUnits = await _context.UserUnits.Where(unit => unit.UserId.Equals(user.Id))
+            //     .ToListAsync();
+            //
+            // var response = userUnits.Select(unit => new UserUnitResponse()
+            // {
+            //     UnitId = unit.UnitId,
+            //     HitPoints = unit.HitPoints
+            // });
             
-            var response = userUnits.Select(unit => new UserUnitResponse()
-            {
-                UnitId = unit.UnitId,
-                HitPoints = unit.HitPoints
-            });
+            var userUnits = _context.UserUnits
+                .Where(u => u.UserId.Equals(user.Id))
+                .Skip((pageNumber - 1) * viewCount)
+                .Take(viewCount);
 
-            return Ok(response);
+            return Ok(userUnits.ToList());
         }
     }
 }

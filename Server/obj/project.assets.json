@@ -10227,7 +10227,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.101/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/Users/tkstart/.dotnet/sdk/6.0.200/RuntimeIdentifierGraph.json"
       }
     }
   }
